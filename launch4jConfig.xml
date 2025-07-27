@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch4jConfig>
+  <dontWrapJar>false</dontWrapJar>
+  <headerType>gui</headerType>
+  <jar>D:\Usuarios\Cleantho\Projetos\ecopage\dist\ecopage.jar</jar>
+  <outfile>D:\Usuarios\Cleantho\Projetos\ecopage\dist\Ecopage.exe</outfile>
+  <errTitle>Atualize sua versão do Java.</errTitle>
+  <cmdLine></cmdLine>
+  <chdir>.</chdir>
+  <priority>normal</priority>
+  <downloadUrl>https://www.java.com/download</downloadUrl>
+  <supportUrl></supportUrl>
+  <stayAlive>false</stayAlive>
+  <restartOnCrash>false</restartOnCrash>
+  <manifest></manifest>
+  <icon>D:\Usuarios\Cleantho\Projetos\ecopage\resources\ecopage64.ico</icon>
+  <jre>
+    <path>jre;%JAVA_HOME%;%PATH%</path>
+    <requiresJdk>false</requiresJdk>
+    <requires64Bit>false</requires64Bit>
+    <minVersion></minVersion>
+    <maxVersion></maxVersion>
+  </jre>
+  <versionInfo>
+    <fileVersion>1.0.0.0</fileVersion>
+    <txtFileVersion>1.0.0.0</txtFileVersion>
+    <fileDescription>Aplicação de Captura e Impressão</fileDescription>
+    <copyright>Cleantho B. Fonseca 2025</copyright>
+    <productVersion>1.0.0.0</productVersion>
+    <txtProductVersion>1.0.0.0</txtProductVersion>
+    <productName>Ecopage</productName>
+    <companyName></companyName>
+    <internalName>Ecopage</internalName>
+    <originalFilename>Ecopage.exe</originalFilename>
+    <trademarks></trademarks>
+    <language>PORTUGUESE_BRAZIL</language>
+  </versionInfo>
+  <messages>
+    <startupErr>Ocorreu um erro ao iniciar o aplicativo.</startupErr>
+    <jreNotFoundErr>Este aplicativo requer um Java Runtime Environment.</jreNotFoundErr>
+    <jreVersionErr>Este aplicativo requer um Java Runtime Environment.</jreVersionErr>
+    <launcherErr>O registro se refere a uma instalação inexistente do Java Runtime Environment ou o tempo de execução está corrompido.</launcherErr>
+    <instanceAlreadyExistsMsg>Uma instância do aplicativo já está em execução.</instanceAlreadyExistsMsg>
+  </messages>
+</launch4jConfig>

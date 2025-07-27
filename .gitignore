@@ -1,0 +1,7 @@
+*.class
+*.jar
+*.zip
+*.log
+/bin
+/dist
+/resources/ecopage.png
