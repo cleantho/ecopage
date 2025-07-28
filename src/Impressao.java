@@ -1,14 +1,24 @@
 import java.awt.*;
-import java.awt.image.BufferedImage;
 import java.awt.print.*;
-
+import java.awt.image.BufferedImage;
+import java.awt.image.BufferedImageOp;
+import java.awt.image.ConvolveOp;
+import java.awt.image.Kernel;
 import java.util.List;
+import javax.swing.JFrame;
 
 public class Impressao implements Printable {
     private List<BufferedImage> imagens;
+    // Margens
+    private int margemTopo;
+    private int margemLateral;
+    private int margemInferior;
 
-    public Impressao(List<BufferedImage> imagens) {
+    public Impressao(List<BufferedImage> imagens, int margemTopo, int margemLateral, int margemInferior) {
         this.imagens = imagens;
+        this.margemTopo = margemTopo;
+        this.margemLateral = margemLateral;
+        this.margemInferior = margemInferior;
     }
 
     @Override
@@ -18,15 +28,13 @@ public class Impressao implements Printable {
 
         Graphics2D g2d = (Graphics2D) graphics;
         g2d.translate(pageFormat.getImageableX(), pageFormat.getImageableY());
-
-        // Margens
-        int margemTopo = 42;
-        int margemLateral = 42;
-        int margemInferior = 42;
+        g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+        g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
         // Dimensões da página A4 = 595 x 842
         double larguraUtil = 595 - 2 * margemLateral;
-        double alturaUtil = 842 - margemTopo - margemInferior;
+        double alturaUtil = 842 - margemTopo - margemInferior - 14;
         double alturaImagem = alturaUtil / 2;
 
         // Posiciona imagens
@@ -44,22 +52,35 @@ public class Impressao implements Printable {
             // int posX = (int) margemLateral + (int) ((larguraUtil - novaLargura) / 2);
             int posX = margemLateral;
             int posY = margemTopo + i * (int) alturaImagem + (int) ((alturaImagem - novaAltura) / 2);
+            if (i == 1) {
+                posY = margemTopo + i * (int) alturaImagem + (int) ((alturaImagem - novaAltura) / 2) + 14;
+            }
 
-            g2d.drawImage(img, posX, posY, novaLargura, novaAltura, null);
+            // Melhora a nitidez
+            float[] softSharpKernel = {
+                    0, -0.5f, 0,
+                    -0.5f, 3, -0.5f,
+                    0, -0.5f, 0
+            };
+            BufferedImageOp op = new ConvolveOp(new Kernel(3, 3, softSharpKernel));
+
+            g2d.drawImage(op.filter(img, null), posX, posY, novaLargura, novaAltura, null);
         }
-
+        g2d.dispose();
         return PAGE_EXISTS;
     }
 
-    public void imprimir() throws PrinterException {
+    public void imprimir(JFrame frame) throws PrinterException {
         PrinterJob job = PrinterJob.getPrinterJob();
         job.setPrintable(this);
 
         if (job.printDialog()) {
+            Cursor originalCursor = frame.getCursor();
+            frame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             job.print();
+            frame.setCursor(originalCursor);
         } else {
             throw new PrinterAbortException();
         }
     }
 }
-

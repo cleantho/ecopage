@@ -9,13 +9,23 @@ import java.util.ArrayList;
 
 public class Interface {
     private final ArrayList<BufferedImage> imagens = new ArrayList<>();
-    private final JPanel painelImagens = new JPanel(new GridLayout(0, 1));
+    private final ArrayList<BufferedImage> backupImagens = new ArrayList<>();
+    private int margemInterna = 15;
+    private final PainelPagina painelImagens = new PainelPagina(margemInterna);
     private final JScrollPane scroll;
     private ImageIcon icone;
 
+    private static final String IMPRIMIR = "Imprimir";
+    private static final String SAIR = "Sair";
+    private static final String DESFAZER = "Desfazer";
+    private static final String REFAZER = "Refazer";
+    private static final String INSERIR = "Inserir";
+    private static final String LIMPAR = "Limpar";
+    private static final String SOBRE = "Sobre...";
+
     public Interface() {
-        scroll = new JScrollPane(painelImagens);        
-        icone = new ImageIcon(getClass().getResource("resources/ecopage32.png"));        
+        scroll = new JScrollPane(painelImagens);
+        icone = new ImageIcon(getClass().getResource("resources/ecopage32.png"));
     }
 
     public void criarInterface() {
@@ -25,11 +35,15 @@ public class Interface {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setIconImage(icone.getImage());
 
-        JButton btnInserir = new JButton("Inserir");
+        UIManager.put("OptionPane.yesButtonText", "Sim");
+        UIManager.put("OptionPane.noButtonText", "Não");
+        UIManager.put("OptionPane.cancelButtonText", "Cancelar");
+
+        JButton btnInserir = new JButton(INSERIR);
         btnInserir.setMnemonic(KeyEvent.VK_I);
-        JButton btnLimpar = new JButton("Limpar");
+        JButton btnLimpar = new JButton(LIMPAR);
         btnLimpar.setMnemonic(KeyEvent.VK_L);
-        JButton btnImprimir = new JButton("Imprimir");
+        JButton btnImprimir = new JButton(IMPRIMIR);
         btnImprimir.setMnemonic(KeyEvent.VK_P);
 
         JPanel botoes = new JPanel();
@@ -45,22 +59,51 @@ public class Interface {
         JMenu menuAjuda = new JMenu("Ajuda");
         menuAjuda.setMnemonic(KeyEvent.VK_J);
 
-        JMenuItem itemImprimir = new JMenuItem("Imprimir");
+        JMenuItem itemImprimir = new JMenuItem(IMPRIMIR);
         itemImprimir.setMnemonic(KeyEvent.VK_P);
         itemImprimir.setAccelerator(KeyStroke.getKeyStroke("control P")); // Ctrl+P
-        JMenuItem itemSair = new JMenuItem("Sair");
+        JMenuItem itemDesfazer = new JMenuItem(DESFAZER);
+        itemDesfazer.setMnemonic(KeyEvent.VK_Z);
+        itemDesfazer.setAccelerator(KeyStroke.getKeyStroke("control Z")); // Ctrl+Z
+        itemDesfazer.setEnabled(false);
+        JMenuItem itemRefazer = new JMenuItem(REFAZER);
+        itemRefazer.setMnemonic(KeyEvent.VK_R);
+        itemRefazer.setAccelerator(KeyStroke.getKeyStroke("control Y")); // Ctrl+Y
+        itemRefazer.setEnabled(false);
+        JMenuItem itemSair = new JMenuItem(SAIR);
         itemSair.setMnemonic(KeyEvent.VK_S);
-        JMenuItem itemInserir = new JMenuItem("Inserir");
+        JMenuItem itemInserir = new JMenuItem(INSERIR);
         itemInserir.setMnemonic(KeyEvent.VK_I);
         itemInserir.setAccelerator(KeyStroke.getKeyStroke("control I")); // Ctrl+I
-        JMenuItem itemLimpar = new JMenuItem("Limpar");
+        JMenuItem itemLimpar = new JMenuItem(LIMPAR);
         itemLimpar.setMnemonic(KeyEvent.VK_L);
         itemLimpar.setAccelerator(KeyStroke.getKeyStroke("control L")); // Ctrl+L
-        JMenuItem itemSobre = new JMenuItem("Sobre...");
+        JMenuItem itemSobre = new JMenuItem(SOBRE);
         itemSobre.setMnemonic(KeyEvent.VK_S); // Atalho Alt+S (opcional)
 
         itemSair.addActionListener(e -> {
             System.exit(0);
+        });
+        itemDesfazer.addActionListener(e -> {
+            if (imagens.size() > 0) {
+                backupImagens.add(imagens.removeLast());
+                painelImagens.removerImagem();
+                itemRefazer.setEnabled(true);
+            }
+            if (imagens.size() < 1) {
+                itemDesfazer.setEnabled(false);
+            }
+
+        });
+        itemRefazer.addActionListener(e -> {
+            if (backupImagens.size() > 0) {
+                imagens.add(backupImagens.removeLast());
+                painelImagens.adicionarImagem(imagens.getLast());
+                itemDesfazer.setEnabled(true);
+            }
+            if (backupImagens.size() < 1) {
+                itemRefazer.setEnabled(false);
+            }
         });
         itemInserir.addActionListener(e -> {
             btnInserir.doClick();
@@ -77,6 +120,8 @@ public class Interface {
 
         menuArquivo.add(itemImprimir);
         menuArquivo.add(itemSair);
+        menuEditar.add(itemDesfazer);
+        menuEditar.add(itemRefazer);
         menuEditar.add(itemInserir);
         menuEditar.add(itemLimpar);
         menuAjuda.add(itemSobre);
@@ -90,51 +135,73 @@ public class Interface {
         frame.setVisible(true);
 
         btnInserir.addActionListener(e -> {
-            BufferedImage imagem = Captura.capturarDaAreaDeTransferencia();
-            if (imagem != null) {
-                if (imagens.size() < 2) {
-                    imagens.add(imagem);
-                    JLabel label = new JLabel(new ImageIcon(imagem));
-                    painelImagens.add(label);
-                    painelImagens.revalidate();
+            try {
+                BufferedImage imagem = Captura.capturarDaAreaDeTransferencia();
+                if (imagem != null) {
+                    if (imagens.size() < 2) {
+                        imagens.add(imagem);
+                        painelImagens.adicionarImagem(imagem);
+                        itemRefazer.setEnabled(false);
+                        itemDesfazer.setEnabled(true);
+                        if (backupImagens.size() > 0) {
+                            backupImagens.removeLast();
+                        }
+                    } else {
+                        JOptionPane.showMessageDialog(frame, "Já existem duas imagens inseridas.", " Aviso",
+                                JOptionPane.INFORMATION_MESSAGE);
+                    }
                 } else {
-                    JOptionPane.showMessageDialog(frame, "Já existem duas imagens inseridas.");
+                    JOptionPane.showMessageDialog(frame, "Nenhuma imagem disponível na área de transferência.", "Aviso",
+                            JOptionPane.INFORMATION_MESSAGE);
                 }
-            } else {
-                JOptionPane.showMessageDialog(frame, "Nenhuma imagem disponível na área de transferência.");
+            } catch (Exception error) {
+                error.printStackTrace();
+                String message = "Erro ao acessar a área de transferência: " + error.getMessage();
+                JOptionPane.showMessageDialog(null, message, "Erro", JOptionPane.ERROR_MESSAGE);
             }
         });
 
         btnLimpar.addActionListener(e -> {
             if (imagens.isEmpty()) {
-                JOptionPane.showMessageDialog(frame, "Nunhuma ação é necessária para limpar.");
+                JOptionPane.showMessageDialog(frame, "Nenhuma ação é necessária para limpar.", "Aviso",
+                        JOptionPane.INFORMATION_MESSAGE);
                 return;
             }
+            itemDesfazer.doClick();
+            itemDesfazer.doClick();
             imagens.clear();
-            painelImagens.removeAll();
-            painelImagens.revalidate();
-            painelImagens.repaint();
+            painelImagens.limpar();
         });
 
         btnImprimir.addActionListener(e -> {
             if (imagens.isEmpty()) {
-                JOptionPane.showMessageDialog(frame, "Nenhuma imagem para imprimir.");
+                JOptionPane.showMessageDialog(frame, "Nenhuma imagem para imprimir.", "Aviso",
+                        JOptionPane.INFORMATION_MESSAGE);
                 return;
             }
             if (imagens.size() < 2) {
-                JOptionPane.showMessageDialog(frame, "São necessárias duas imagens para imprimir.");
+                JOptionPane.showMessageDialog(frame, "São necessárias duas imagens para imprimir.", "Aviso",
+                        JOptionPane.INFORMATION_MESSAGE);
                 return;
             }
 
-            Impressao impressao = new Impressao(imagens);
+            Impressao impressao = new Impressao(imagens, margemInterna, margemInterna, margemInterna);
             try {
-                impressao.imprimir();
-                JOptionPane.showMessageDialog(frame, "Sucesso na Impressão.");
+                impressao.imprimir(frame);
+                int resposta = JOptionPane.showConfirmDialog(
+                        frame,
+                        "Impressão realizada com sucesso!!!\nDeseja limpar?\n\n",
+                        "Confirmação",
+                        JOptionPane.YES_NO_OPTION);
+
+                if (resposta == JOptionPane.YES_OPTION) {
+                    btnLimpar.doClick();
+                }
             } catch (PrinterAbortException err) {
-                JOptionPane.showMessageDialog(frame, "Impressão suspensa.");
+                JOptionPane.showMessageDialog(frame, "Impressão suspensa.", "Aviso", JOptionPane.INFORMATION_MESSAGE);
             } catch (PrinterException err) {
-                err.printStackTrace();
-                JOptionPane.showMessageDialog(frame, err.getMessage());
+                frame.setCursor(Cursor.getDefaultCursor());
+                JOptionPane.showMessageDialog(frame, err.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
             }
         });
 
@@ -165,8 +232,8 @@ public class Interface {
                 <html>
                 <p>🖨️ Aplicação de Captura e Impressão</p>
                 <p><b>Autor:</b> Cleantho B. Fonseca</p>
-                <p><b>Versão:</b> 1.0.0</p>
-                <p><b>Atualizado em:</b> 20/07/2025</p>
+                <p><b>Versão:</b> 2.0.0</p>
+                <p><b>Atualizado em:</b> 27/07/2025</p>
                 <br>
                 <p>Esta ferramenta permite capturar imagens da área de<br> transferência,
                     organizar visualmente e imprimir com layout A4 padronizado.</p>
