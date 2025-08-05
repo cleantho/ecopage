@@ -15,19 +15,19 @@
   <manifest></manifest>
   <icon>D:\Usuarios\Cleantho\Projetos\ecopage\resources\ecopage64.ico</icon>
   <jre>
-    <path>jre;%JAVA_HOME%;%PATH%</path>
+    <path>%EXEDIR%/jre;%PATH%</path>
     <requiresJdk>false</requiresJdk>
     <requires64Bit>false</requires64Bit>
     <minVersion></minVersion>
     <maxVersion></maxVersion>
   </jre>
   <versionInfo>
-    <fileVersion>2.0.0.0</fileVersion>
-    <txtFileVersion>2.0.0.0</txtFileVersion>
+    <fileVersion>2.3.19.0</fileVersion>
+    <txtFileVersion>2.3.19.0</txtFileVersion>
     <fileDescription>Aplicação de Captura e Impressão</fileDescription>
     <copyright>Cleantho B. Fonseca 2025</copyright>
-    <productVersion>2.0.0.0</productVersion>
-    <txtProductVersion>2.0.0.0</txtProductVersion>
+    <productVersion>2.3.19.0</productVersion>
+    <txtProductVersion>2.3.19.0</txtProductVersion>
     <productName>Ecopage</productName>
     <companyName></companyName>
     <internalName>Ecopage</internalName>

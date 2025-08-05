@@ -5,14 +5,8 @@ import java.util.ArrayList;
 
 public class PainelPagina extends JPanel {
     private java.util.List<BufferedImage> imagens;
-    private int margem = 42;
-    private int larguraPagina;
-    private int alturaPagina;
-    private int margemLateral;
-    private int margemInterna;
 
-    public PainelPagina(int margemInterna) {
-        this.margemInterna = margemInterna;
+    public PainelPagina() {
         this.imagens = new ArrayList<>();
         setBackground(Color.LIGHT_GRAY);
         setLayout(null); // posições absolutas
@@ -66,6 +60,11 @@ public class PainelPagina extends JPanel {
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
+        int margem = 42;
+        int larguraPagina;
+        int alturaPagina;
+        int margemLateral;
+        int margemInterna;
         Graphics2D g2d = (Graphics2D) g;
 
         if (getWidth() > getHeight()) {
@@ -77,6 +76,7 @@ public class PainelPagina extends JPanel {
             alturaPagina = (int) (larguraPagina * 1.414);
             margemLateral = margem;
         }
+        margemInterna = (int) (larguraPagina * 0.04761);
 
         // Fundo da "folha"
         g2d.setColor(Color.WHITE);
@@ -105,31 +105,27 @@ public class PainelPagina extends JPanel {
         g2d.drawLine(margemLateral, margem + alturaPagina - margemInterna + 1,
                 margemLateral + larguraPagina, margem + alturaPagina - margemInterna + 1);
 
+        int espacamento = (int) (alturaPagina * 0.03367);
+        int alturaUtil = alturaPagina - espacamento - (margemInterna * 2);
+        int larguraUtil = larguraPagina - (margemInterna * 2);
         if (imagens.size() >= 1) {
             removeAll();
-            Image imageScale = redimensionarComProporcao(imagens.get(0), larguraPagina - (margemInterna * 2),
-                    (alturaPagina - 14 - (margemInterna * 2)) / 2);
-            JLabel label = new JLabel(new ImageIcon(imageScale));
+            for (int i = 0; i < imagens.size(); i++) {
+                Image imageScale = redimensionarComProporcao(imagens.get(i), larguraUtil, alturaUtil / 2);
+                JLabel label = new JLabel(new ImageIcon(imageScale));
 
-            int posY = margem + margemInterna
-                    + (((alturaPagina / 2) - 7 - margemInterna) - imageScale.getHeight(label)) / 2;
-
-            label.setBounds(margemLateral + margemInterna, posY, imageScale.getWidth(label),
-                    imageScale.getHeight(label)); // margens e espaçamento
-            add(label);
-            if (imagens.size() == 2) {
-                imageScale = redimensionarComProporcao(imagens.get(1), larguraPagina - (margemInterna * 2),
-                        (alturaPagina - 14 - (margemInterna * 2)) / 2);
-                label = new JLabel(new ImageIcon(imageScale));
-                posY = margem + (alturaPagina / 2)
-                        + (((alturaPagina / 2) - 7 - margemInterna) - imageScale.getHeight(label)) / 2;
+                int posY = margem + ((alturaUtil / 2) - imageScale.getHeight(label)) / 2;
+                if (i == 0) {
+                    posY += margemInterna;
+                } else {
+                    posY += (alturaPagina + espacamento) / 2;
+                }
                 label.setBounds(margemLateral + margemInterna, posY,
                         imageScale.getWidth(label),
                         imageScale.getHeight(label)); // margens e espaçamento
                 add(label);
             }
-
         }
-
     }
+    
 }

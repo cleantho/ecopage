@@ -5,20 +5,18 @@ import java.awt.image.BufferedImageOp;
 import java.awt.image.ConvolveOp;
 import java.awt.image.Kernel;
 import java.util.List;
+
+import javax.print.PrintService;
+import javax.print.PrintServiceLookup;
 import javax.swing.JFrame;
 
 public class Impressao implements Printable {
     private List<BufferedImage> imagens;
     // Margens
-    private int margemTopo;
-    private int margemLateral;
-    private int margemInferior;
+    private final int margem = 25;
 
-    public Impressao(List<BufferedImage> imagens, int margemTopo, int margemLateral, int margemInferior) {
+    public Impressao(List<BufferedImage> imagens) {
         this.imagens = imagens;
-        this.margemTopo = margemTopo;
-        this.margemLateral = margemLateral;
-        this.margemInferior = margemInferior;
     }
 
     @Override
@@ -28,32 +26,37 @@ public class Impressao implements Printable {
 
         Graphics2D g2d = (Graphics2D) graphics;
         g2d.translate(pageFormat.getImageableX(), pageFormat.getImageableY());
+        g2d.scale(1.0, 1.0); // Escala 100%
         g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
         g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-        // Dimensões da página A4 = 595 x 842
-        double larguraUtil = 595 - 2 * margemLateral;
-        double alturaUtil = 842 - margemTopo - margemInferior - 14;
-        double alturaImagem = alturaUtil / 2;
+        // Dimensões da página A4(210 x 297mm) = 595.3322834645669 x 841.9181102362205
+        // pontos
+        // Área disponivel para impressão A4(200 x 287mm) = 566 x 813 pontos
+        // double scale = 2.83465; // conversão mm -> pt
+        double larguraMaxImagem = 534;
+        double alturaMaxImagem = 386;
 
         // Posiciona imagens
         for (int i = 0; i < 2; i++) {
             BufferedImage img = imagens.get(i);
 
-            double escalaX = larguraUtil / img.getWidth();
-            double escalaY = alturaImagem / img.getHeight();
+            double escalaX = larguraMaxImagem / img.getWidth();
+            double escalaY = alturaMaxImagem / img.getHeight();
             double escala = Math.min(escalaX, escalaY);
 
             int novaLargura = (int) (img.getWidth() * escala);
             int novaAltura = (int) (img.getHeight() * escala);
 
             // Centraliza no eixo vertical
-            // int posX = (int) margemLateral + (int) ((larguraUtil - novaLargura) / 2);
-            int posX = margemLateral;
-            int posY = margemTopo + i * (int) alturaImagem + (int) ((alturaImagem - novaAltura) / 2);
-            if (i == 1) {
-                posY = margemTopo + i * (int) alturaImagem + (int) ((alturaImagem - novaAltura) / 2) + 14;
+            // int posX = (int) margem + (int) ((larguraMaxImagem - novaLargura) / 2);
+            int posX = margem;
+            int posY;
+            if (i == 0) {
+                posY = margem + (int) ((alturaMaxImagem - novaAltura) / 2);
+            } else {
+                posY = margem + (int) alturaMaxImagem + 15 + (int) ((alturaMaxImagem - novaAltura) / 2);
             }
 
             // Melhora a nitidez
@@ -70,9 +73,20 @@ public class Impressao implements Printable {
         return PAGE_EXISTS;
     }
 
-    public void imprimir(JFrame frame) throws PrinterException {
+    public void imprimir(JFrame frame, boolean pdf) throws PrinterException {
         PrinterJob job = PrinterJob.getPrinterJob();
         job.setPrintable(this);
+
+        // Procurar pela impressora "Microsoft Print to PDF"
+        if (pdf) {
+            PrintService[] services = PrintServiceLookup.lookupPrintServices(null, null);
+            for (PrintService service : services) {
+                if (service.getName().toLowerCase().contains("pdf")) {                    
+                        job.setPrintService(service);
+                        break;                    
+                }
+            }
+        }
 
         if (job.printDialog()) {
             Cursor originalCursor = frame.getCursor();

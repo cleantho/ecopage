@@ -10,12 +10,13 @@ import java.util.ArrayList;
 public class Interface {
     private final ArrayList<BufferedImage> imagens = new ArrayList<>();
     private final ArrayList<BufferedImage> backupImagens = new ArrayList<>();
-    private int margemInterna = 15;
-    private final PainelPagina painelImagens = new PainelPagina(margemInterna);
+    private final PainelPagina painelImagens = new PainelPagina();
     private final JScrollPane scroll;
     private ImageIcon icone;
+    private boolean pdf = false;
 
-    private static final String IMPRIMIR = "Imprimir";
+    private static final String IMPRIMIR = "Imprimir...";
+    private static final String IMPRIMIR_PDF = "Imprimir PDF...";
     private static final String SAIR = "Sair";
     private static final String DESFAZER = "Desfazer";
     private static final String REFAZER = "Refazer";
@@ -30,7 +31,8 @@ public class Interface {
 
     public void criarInterface() {
         JFrame frame = new JFrame("EcoPage");
-        frame.setSize(800, 600);
+        frame.setSize(800, 600); // Tamanho inicial
+        frame.setMinimumSize(new Dimension(400, 700)); // Tamanho mínimo
         frame.setLocationRelativeTo(null);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setIconImage(icone.getImage());
@@ -62,24 +64,64 @@ public class Interface {
         JMenuItem itemImprimir = new JMenuItem(IMPRIMIR);
         itemImprimir.setMnemonic(KeyEvent.VK_P);
         itemImprimir.setAccelerator(KeyStroke.getKeyStroke("control P")); // Ctrl+P
+        itemImprimir.setIcon(new ImageIcon(getClass().getResource("resources/imprimir32.png")));
+        JMenuItem itemImprimirPDF = new JMenuItem(IMPRIMIR_PDF);
+        itemImprimirPDF.setMnemonic(KeyEvent.VK_F);
+        itemImprimirPDF.setAccelerator(KeyStroke.getKeyStroke("control F")); // Ctrl+F
+        itemImprimirPDF.setIcon(new ImageIcon(getClass().getResource("resources/pdf32.png")));
+        JMenuItem itemSair = new JMenuItem(SAIR);
+        itemSair.setIcon(new ImageIcon(getClass().getResource("resources/none32.png")));
+        itemSair.setMnemonic(KeyEvent.VK_S);
         JMenuItem itemDesfazer = new JMenuItem(DESFAZER);
         itemDesfazer.setMnemonic(KeyEvent.VK_Z);
         itemDesfazer.setAccelerator(KeyStroke.getKeyStroke("control Z")); // Ctrl+Z
+        itemDesfazer.setIcon(new ImageIcon(getClass().getResource("resources/desfazer32.png")));
         itemDesfazer.setEnabled(false);
         JMenuItem itemRefazer = new JMenuItem(REFAZER);
         itemRefazer.setMnemonic(KeyEvent.VK_R);
         itemRefazer.setAccelerator(KeyStroke.getKeyStroke("control Y")); // Ctrl+Y
+        itemRefazer.setIcon(new ImageIcon(getClass().getResource("resources/refazer32.png")));
         itemRefazer.setEnabled(false);
-        JMenuItem itemSair = new JMenuItem(SAIR);
-        itemSair.setMnemonic(KeyEvent.VK_S);
         JMenuItem itemInserir = new JMenuItem(INSERIR);
         itemInserir.setMnemonic(KeyEvent.VK_I);
         itemInserir.setAccelerator(KeyStroke.getKeyStroke("control I")); // Ctrl+I
+        itemInserir.setIcon(new ImageIcon(getClass().getResource("resources/inserir32.png")));
         JMenuItem itemLimpar = new JMenuItem(LIMPAR);
         itemLimpar.setMnemonic(KeyEvent.VK_L);
         itemLimpar.setAccelerator(KeyStroke.getKeyStroke("control L")); // Ctrl+L
+        itemLimpar.setIcon(new ImageIcon(getClass().getResource("resources/limpar32.png")));
         JMenuItem itemSobre = new JMenuItem(SOBRE);
+        itemSobre.setIcon(new ImageIcon(getClass().getResource("resources/none32.png")));
         itemSobre.setMnemonic(KeyEvent.VK_S); // Atalho Alt+S (opcional)
+
+        // 🖱️ Barra de ícones (toolbar)
+        JToolBar toolBar = new JToolBar();
+        toolBar.setFloatable(false); // Impede que seja arrastado
+        JButton btnDesfazer = new JButton(new ImageIcon(getClass().getResource("resources/desfazer32.png"))); // ícone
+                                                                                                              // local
+        btnDesfazer.setToolTipText("Desfazer");
+        btnDesfazer.setEnabled(false);
+        JButton btnRefazer = new JButton(new ImageIcon(getClass().getResource("resources/refazer32.png")));
+        btnRefazer.setToolTipText("Refazer");
+        btnRefazer.setEnabled(false);
+        JButton btnInserir2 = new JButton(new ImageIcon(getClass().getResource("resources/inserir32.png")));
+        btnInserir2.setToolTipText("Inserir");
+        JButton btnLimpar2 = new JButton(new ImageIcon(getClass().getResource("resources/limpar32.png")));
+        btnLimpar2.setToolTipText("Limpar");
+        JButton btnImprimir2 = new JButton(new ImageIcon(getClass().getResource("resources/imprimir32.png")));
+        btnImprimir2.setToolTipText("Imprimir...");
+        JButton btnImprimirPDF = new JButton(new ImageIcon(getClass().getResource("resources/pdf32.png")));
+        btnImprimirPDF.setToolTipText("Imprimir para PDF...");
+
+        toolBar.add(btnDesfazer);
+        toolBar.add(btnRefazer);
+        toolBar.add(btnInserir2);
+        toolBar.add(btnLimpar2);
+        toolBar.add(btnImprimir2);
+        toolBar.add(btnImprimirPDF);
+        // 🧩 Layout principal
+        frame.setLayout(new BorderLayout());
+        frame.add(toolBar, BorderLayout.NORTH); // abaixo da barra de menu
 
         itemSair.addActionListener(e -> {
             System.exit(0);
@@ -89,9 +131,11 @@ public class Interface {
                 backupImagens.add(imagens.removeLast());
                 painelImagens.removerImagem();
                 itemRefazer.setEnabled(true);
+                btnRefazer.setEnabled(true);
             }
             if (imagens.size() < 1) {
                 itemDesfazer.setEnabled(false);
+                btnDesfazer.setEnabled(false);
             }
 
         });
@@ -100,9 +144,11 @@ public class Interface {
                 imagens.add(backupImagens.removeLast());
                 painelImagens.adicionarImagem(imagens.getLast());
                 itemDesfazer.setEnabled(true);
+                btnDesfazer.setEnabled(true);
             }
             if (backupImagens.size() < 1) {
                 itemRefazer.setEnabled(false);
+                btnRefazer.setEnabled(false);
             }
         });
         itemInserir.addActionListener(e -> {
@@ -114,11 +160,36 @@ public class Interface {
         itemImprimir.addActionListener(e -> {
             btnImprimir.doClick();
         });
+        itemImprimirPDF.addActionListener(e -> {
+            pdf = true;
+            btnImprimir.doClick();
+            pdf = false;
+        });
         itemSobre.addActionListener(e -> {
             mostrarSobre(frame);
         });
 
+        btnDesfazer.addActionListener(e -> {
+            itemDesfazer.doClick();
+        });
+        btnRefazer.addActionListener(e -> {
+            itemRefazer.doClick();
+        });
+        btnInserir2.addActionListener(e -> {
+            btnInserir.doClick();
+        });
+        btnLimpar2.addActionListener(e -> {
+            btnLimpar.doClick();
+        });
+        btnImprimir2.addActionListener(e -> {
+            itemImprimir.doClick();
+        });
+        btnImprimirPDF.addActionListener(e -> {
+            itemImprimirPDF.doClick();
+        });
+
         menuArquivo.add(itemImprimir);
+        menuArquivo.add(itemImprimirPDF);
         menuArquivo.add(itemSair);
         menuEditar.add(itemDesfazer);
         menuEditar.add(itemRefazer);
@@ -143,6 +214,8 @@ public class Interface {
                         painelImagens.adicionarImagem(imagem);
                         itemRefazer.setEnabled(false);
                         itemDesfazer.setEnabled(true);
+                        btnRefazer.setEnabled(false);
+                        btnDesfazer.setEnabled(true);
                         if (backupImagens.size() > 0) {
                             backupImagens.removeLast();
                         }
@@ -185,9 +258,13 @@ public class Interface {
                 return;
             }
 
-            Impressao impressao = new Impressao(imagens, margemInterna, margemInterna, margemInterna);
+            Impressao impressao = new Impressao(imagens);
             try {
-                impressao.imprimir(frame);
+                if (pdf) {
+                    impressao.imprimir(frame, true);
+                } else {
+                    impressao.imprimir(frame, false);
+                }
                 int resposta = JOptionPane.showConfirmDialog(
                         frame,
                         "Impressão realizada com sucesso!!!\nDeseja limpar?\n\n",
@@ -198,6 +275,7 @@ public class Interface {
                     btnLimpar.doClick();
                 }
             } catch (PrinterAbortException err) {
+                frame.setCursor(Cursor.getDefaultCursor());
                 JOptionPane.showMessageDialog(frame, "Impressão suspensa.", "Aviso", JOptionPane.INFORMATION_MESSAGE);
             } catch (PrinterException err) {
                 frame.setCursor(Cursor.getDefaultCursor());
@@ -232,8 +310,8 @@ public class Interface {
                 <html>
                 <p>🖨️ Aplicação de Captura e Impressão</p>
                 <p><b>Autor:</b> Cleantho B. Fonseca</p>
-                <p><b>Versão:</b> 2.0.0</p>
-                <p><b>Atualizado em:</b> 27/07/2025</p>
+                <p><b>Versão:</b> 2.3.19</p>
+                <p><b>Atualizado em:</b> 04/08/2025</p>
                 <br>
                 <p>Esta ferramenta permite capturar imagens da área de<br> transferência,
                     organizar visualmente e imprimir com layout A4 padronizado.</p>
