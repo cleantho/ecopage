@@ -12,8 +12,6 @@ import javax.swing.JFrame;
 
 public class Impressao implements Printable {
     private List<BufferedImage> imagens;
-    // Margens
-    private final int margem = 25;
 
     public Impressao(List<BufferedImage> imagens) {
         this.imagens = imagens;
@@ -31,12 +29,18 @@ public class Impressao implements Printable {
         g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
+        // Configuração de margens e espaçamento
+        int margem = 25; // 8 mm em cada lateral
+        int espacamento = 15; // 5 mm entre imagens
+
+        // Área imprimível real
+        double imgWidth = pageFormat.getImageableWidth();
+        double imgHeight = pageFormat.getImageableHeight();
+
         // Dimensões da página A4(210 x 297mm) = 595.3322834645669 x 841.9181102362205
-        // pontos
-        // Área disponivel para impressão A4(200 x 287mm) = 566 x 813 pontos
         // double scale = 2.83465; // conversão mm -> pt
-        double larguraMaxImagem = 534;
-        double alturaMaxImagem = 386;
+        double larguraMaxImagem = imgWidth - 2 * margem;
+        double alturaMaxImagem = (imgHeight - 2 * margem - espacamento) / 2;
 
         // Posiciona imagens
         for (int i = 0; i < 2; i++) {
@@ -52,12 +56,7 @@ public class Impressao implements Printable {
             // Centraliza no eixo vertical
             // int posX = (int) margem + (int) ((larguraMaxImagem - novaLargura) / 2);
             int posX = margem;
-            int posY;
-            if (i == 0) {
-                posY = margem + (int) ((alturaMaxImagem - novaAltura) / 2);
-            } else {
-                posY = margem + (int) alturaMaxImagem + 15 + (int) ((alturaMaxImagem - novaAltura) / 2);
-            }
+            int posY = margem + (i * (int) alturaMaxImagem) + espacamento + (int) ((alturaMaxImagem - novaAltura) / 2);
 
             // Melhora a nitidez
             float[] softSharpKernel = {
@@ -81,9 +80,9 @@ public class Impressao implements Printable {
         if (pdf) {
             PrintService[] services = PrintServiceLookup.lookupPrintServices(null, null);
             for (PrintService service : services) {
-                if (service.getName().toLowerCase().contains("pdf")) {                    
-                        job.setPrintService(service);
-                        break;                    
+                if (service.getName().toLowerCase().contains("pdf")) {
+                    job.setPrintService(service);
+                    break;
                 }
             }
         }

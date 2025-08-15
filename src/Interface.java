@@ -310,8 +310,8 @@ public class Interface {
                 <html>
                 <p>🖨️ Aplicação de Captura e Impressão</p>
                 <p><b>Autor:</b> Cleantho B. Fonseca</p>
-                <p><b>Versão:</b> 2.3.19</p>
-                <p><b>Atualizado em:</b> 04/08/2025</p>
+                <p><b>Versão:</b> 2.3.21</p>
+                <p><b>Atualizado em:</b> 14/08/2025</p>
                 <br>
                 <p>Esta ferramenta permite capturar imagens da área de<br> transferência,
                     organizar visualmente e imprimir com layout A4 padronizado.</p>
